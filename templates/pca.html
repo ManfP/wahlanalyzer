@@ -1,0 +1,15 @@
+<head>
+  <meta charset="utf-8">
+</head>
+
+<h1>Hauptkomponentenanalyse</h1>
+{{pcatable|safe}}
+
+<img src="parteien_pca.png" width=60%></img>
+
+<img src="bezirke_pca.png" width=60%></img>
+
+{% for i in range(1, num_pca_maps+1) %}
+<h2>{{i}}. Komponente</h2>
+<img src="pca{{i}}.png" width=60%></img>
+{% endfor %}

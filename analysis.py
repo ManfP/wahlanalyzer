@@ -156,12 +156,14 @@ for i in range(PCA_COMPONENTS_MAPS):
 	make_map(dat_comps[i], f"pca{i+1}.png")
 
 r=jinja_env.get_template("index.html").render(resulttable = get_result_table(),
-										      pcatable = get_pca_table(),
-										      briefwahl_success = briefwahl_per_w,
-										      num_pca_maps = PCA_COMPONENTS_MAPS)
+										      briefwahl_success = briefwahl_per_w)
 with open(os.path.join(OUTDIR, "index.html"),"w") as f:
 	f.write(r)
-
+	
+r=jinja_env.get_template("pca.html").render(pcatable=get_pca_table(),
+											num_pca_maps = PCA_COMPONENTS_MAPS)
+with open(os.path.join(OUTDIR, "pca.html"),"w") as f:
+	f.write(r)
 
 os.mkdir(os.path.join(OUTDIR, "parteien"))
 r = jinja_env.get_template("parteien.html").render(parties = parties)

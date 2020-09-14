@@ -1,0 +1,33 @@
+<head>
+  <meta charset="utf-8">
+</head>
+
+{{resulttable|safe}}
+
+<h3>Alle weiteren Ergebnisse ohne Briefwahlergebnisse!</h3>
+
+Für die Anzahl Briefwähler pro Stimmbezirk wird Anteil der Wahlberechtigen mit Sperrverwerk W (ausgestellter Wahlschein) als Proxy für Briefwähler verwendet. <br />
+Davon haben {{"{:.2%}".format(briefwahl_success)}} tatsächlich per Brief gewählt.
+
+<br />
+
+<h1><a href="parteien/index.html">Parteiergebnisse pro Stimmbezirk</a></h1>
+
+<h1>Wahlbeteiligung (inkl. geschätzten Briefwählern)</h1>
+<img src="beteiligung.png" width=60%></img>
+
+<h1>Wahlberechtigte pro Fläche (logarithmisch)</h1>
+<img src="area.png" width=60%></img>
+
+
+<h1>PCA</h1>
+{{pcatable|safe}}
+
+<img src="parteien_pca.png" width=60%></img>
+
+<img src="bezirke_pca.png" width=60%></img>
+
+{% for i in range(1, num_pca_maps+1) %}
+<h2>{{i}}. Komponente</h2>
+<img src="pca{{i}}.png" width=60%></img>
+{% endfor %}

@@ -82,11 +82,11 @@ def do_pca():
 pca, dat_pca = do_pca()
 comps = pca.components_
 dat_comps = dat_pca.transpose()
-
+compnames = ["(nichtwähler)","(briefwahl)","(ungültig)"]+parties
 def get_pca_table():
 	table = []
-	for i in range(len(parties)+2):
-		s = (["(nichtwähler)","(briefwahl)","(ungültig)"]+parties)[i]
+	for i in range(len(compnames)):
+		s = compnames[i]
 		l = [s]
 		l += [format(k[i], ".03f") for k in comps[:PCA_COMPONENTS_TABLE]]
 		table.append(l)
@@ -110,7 +110,7 @@ def make_pca_parties(outfn):
 	fig = plt.figure(dpi=PLOT_DPI)
 	X = []
 	Y = []
-	for i,p in enumerate(["(nichtwähler)","(briefwahl)","(ungültig)"]+parties):
+	for i,p in enumerate(compnames):
 		x=comps[0][i]
 		y=comps[1][i]
 		X.append(x)

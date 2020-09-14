@@ -1,7 +1,9 @@
+{% set tab = "parteien" %}
+{% set title = "Parteieergebnisse nach Stimmkreis" %}
 {% extends "base.html" %}
 {% block content %}
 {% for p in parties %}
 <h2>{{p}}</h2>
-<img src="{{p}}.png" width=60%></img>
+<img src="parteien/{{p}}.png" width=60%></img>
 {% endfor %}
 {% endblock %}

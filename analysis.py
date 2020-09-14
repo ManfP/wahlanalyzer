@@ -9,8 +9,10 @@ import numpy as np
 import tabulate
 import requests
 import os
+import shutil
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+WAHL_NAME = "Kommunalwahl Bonn 2020"
 OUTDIR = "out/"
 parties = ["CDU","SPD","Grüne","FDP","Linke","BBB","AfD","Piraten","BIG","PARTEI","StephanPost","Volt"]
 columns = ["datum","wahl","ags","gebiet_nr","gebiet_name","max_schnellmeldungen","schnellmeldungen","nicht_sperr_w","sperr_w","nicht_verzeichnis","berechtigte","wähler","wähler_wahlschein","ungültig","gültig"]+parties
@@ -29,14 +31,10 @@ INDEX_GEODATA = "stimmbezirk_corona"
 
 
 if os.path.exists(OUTDIR):
-	os.system(f"rm -r {OUTDIR}")
-os.mkdir(OUTDIR)
+	shutil.rmtree(OUTDIR)
+shutil.copytree("static", OUTDIR)
 
-
-
-fn_geodata = URL_GEODATA.split("/")[-1]
-
-if not os.path.exists(fn_geodata):
+if not os.path.exists(FILE_GEODATA):
 	s = requests.get(URL_GEODATA).text
 	with open(FILE_GEODATA, "w") as f:
 		f.write(s)
@@ -149,6 +147,7 @@ def make_pca_places(outfn):
 
 	
 make_map((briefwahl_per_w*data_lokal.sperr_w+data_lokal.wähler)/data_lokal.berechtigte, "beteiligung.png")
+make_map(briefwahl_per_w*data_lokal.sperr_w/(briefwahl_per_w*data_lokal.sperr_w+data_lokal.wähler), "briefwahl.png")
 make_map(np.log10(data_lokal.berechtigte / data_lokal.area), "area.png")
 make_pca_parties("parteien_pca.png")
 make_pca_places("bezirke_pca.png")
@@ -156,7 +155,8 @@ for i in range(PCA_COMPONENTS_MAPS):
 	make_map(dat_comps[i], f"pca{i+1}.png")
 
 r=jinja_env.get_template("index.html").render(resulttable = get_result_table(),
-										      briefwahl_success = briefwahl_per_w)
+										      briefwahl_success = briefwahl_per_w,
+										      electionname = WAHL_NAME)
 with open(os.path.join(OUTDIR, "index.html"),"w") as f:
 	f.write(r)
 	
@@ -167,7 +167,7 @@ with open(os.path.join(OUTDIR, "pca.html"),"w") as f:
 
 os.mkdir(os.path.join(OUTDIR, "parteien"))
 r = jinja_env.get_template("parteien.html").render(parties = parties)
-with open(os.path.join(OUTDIR, "parteien", "index.html"),"w") as f:
+with open(os.path.join(OUTDIR, "parteien.html"),"w") as f:
 	f.write(r)
 for p in parties:
 	make_map(data_lokal[p] / data_lokal.wähler, f"parteien/{p}.png")

@@ -1,7 +1,8 @@
+{% set tab = "index" %}
+{% set title = electionname %}
 {% extends "base.html" %}
 {% block content %}
 {{resulttable|safe}}
-
 <h3>Alle weiteren Ergebnisse ohne Briefwahlergebnisse!</h3>
 
 Für die Anzahl Briefwähler pro Stimmbezirk wird Anteil der Wahlberechtigen mit Sperrverwerk W (ausgestellter Wahlschein) als Proxy für Briefwähler verwendet. <br />
@@ -9,13 +10,13 @@ Davon haben {{"{:.2%}".format(briefwahl_success)}} tatsächlich per Brief gewäh
 
 <br />
 
-<h2><a href="parteien/index.html">Parteiergebnisse pro Stimmbezirk</a></h2>
-
 <h2>Wahlbeteiligung (inkl. geschätzten Briefwählern)</h2>
 <img src="beteiligung.png" width=60%></img>
+
+<h2>Anteil (geschätzter) Briefwähler</h2>
+<img src="briefwahl.png" width=60%></img>
 
 <h2>Wahlberechtigte pro Fläche (logarithmisch)</h2>
 <img src="area.png" width=60%></img>
 
-<h2><a href="pca.html">Hauptkomponentenanalyse</a></h2>
 {% endblock %}

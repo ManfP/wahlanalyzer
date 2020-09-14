@@ -4,9 +4,11 @@
 {% block content %}
 {{pcatable|safe}}
 
-<img src="parteien_pca.png" width=60%></img>
 
-<img src="bezirke_pca.png" width=60%></img>
+<div>
+<img src="parteien_pca.svg" width=40% style="float: left"></img>
+<img src="bezirke_pca.svg" width=40%></img>
+</div>
 
 {% for i in range(1, num_pca_maps+1) %}
 <h2>{{i}}. Komponente</h2>

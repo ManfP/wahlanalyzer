@@ -119,7 +119,7 @@ def make_pca_parties(outfn):
 	plt.plot(X,Y,".")
 	plt.xlabel("Komponente 1")
 	plt.ylabel("Komponente 2")
-	plt.title("PCA Parteien")
+	plt.title("Parteien")
 	plt.savefig(os.path.join(OUTDIR, outfn))
 	plt.close(fig)
 	
@@ -160,10 +160,6 @@ def make_winner_map(outfn):
 	plt.savefig(os.path.join(OUTDIR, outfn))
 	plt.close(fig)
 	
-def get_corr_matrix():
-	
-	return df.corr()
-	
 
 def make_corr_matrix(outfn):
 	df = pd.DataFrame()
@@ -197,8 +193,8 @@ make_winner_map("winners.png")
 make_map((briefwahl_per_w*data_lokal.sperr_w+data_lokal.wähler)/data_lokal.berechtigte, "beteiligung.png")
 make_map(briefwahl_per_w*data_lokal.sperr_w/(briefwahl_per_w*data_lokal.sperr_w+data_lokal.wähler), "briefwahl.png")
 make_map(np.log10(data_lokal.berechtigte / data_lokal.area), "area.png")
-make_pca_parties("parteien_pca.png")
-make_pca_places("bezirke_pca.png")
+make_pca_parties("parteien_pca.svg")
+make_pca_places("bezirke_pca.svg")
 make_corr_matrix("korrelation.png")
 for i in range(PCA_COMPONENTS_MAPS):
 	make_map(dat_comps[i], f"pca{i+1}.png")

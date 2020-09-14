@@ -14,7 +14,7 @@ import shutil
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from collections import Counter
 
-WAHL_NAME = "Kommunalwahl Bonn 2020"
+WAHL_NAME = "Kommunalwahl Bonn 2020 (Stadtrat)"
 OUTDIR = "out/"
 parties = ["CDU","SPD","GRÜNE","FDP","DIE LINKE","BBB","AfD","PIRATEN","BIG","Die PARTEI","Stephan Post","Volt"]
 columns = ["datum","wahl","ags","gebiet_nr","gebiet_name","max_schnellmeldungen","schnellmeldungen","nicht_sperr_w","sperr_w","nicht_verzeichnis","berechtigte","wähler","wähler_wahlschein","ungültig","gültig"]+parties
@@ -49,12 +49,10 @@ assert len(results.columns) == len(columns)
 results.columns = columns
 data = geopandas.GeoDataFrame(results).set_index(INDEX_RESULTS).join(geodata.set_index(INDEX_GEODATA)["geometry"]) # Results + Geometry
 data_lokal = data[data.berechtigte != 0] # filter out ze briefwahlbezirke
-
 briefwahl_per_w = data[data.berechtigte == 0].wähler.sum() / data[data.berechtigte != 0].sperr_w.sum() # Briefwähler / Wähler mit W-Vermerk
 
-
 def make_map(d, outfn, **kwargs):
-	plt.figure(dpi = PLOT_DPI, frameon = False)
+	fig = plt.figure(dpi = PLOT_DPI, frameon = False)
 	ax = data_lokal.plot(d, alpha=0.5, legend=True, figsize=(12,12), **kwargs)
 	ax.set_axis_off()
 	ax.set_aspect('equal')
@@ -62,7 +60,7 @@ def make_map(d, outfn, **kwargs):
 	plt.box(False)
 	plt.tight_layout()
 	plt.savefig(os.path.join(OUTDIR, outfn))
-	plt.close()
+	plt.close(fig)
 	
 
 
@@ -124,7 +122,7 @@ def make_pca_parties(outfn):
 	plt.ylabel("Komponente 2")
 	plt.title("PCA Parteien")
 	plt.savefig(os.path.join(OUTDIR, outfn))
-	plt.close()
+	plt.close(fig)
 	
 def make_pca_places(outfn):
 	fig = plt.figure(dpi=PLOT_DPI)
@@ -144,12 +142,12 @@ def make_pca_places(outfn):
 	plt.ylabel("Komponente 2")
 	plt.legend(leg)
 	plt.savefig(os.path.join(OUTDIR, outfn),dpi=PLOT_DPI)
-	plt.close()
+	plt.close(fig)
 	
 district_winners = [max(parties,key=lambda i:d[i]) for d in data_lokal.to_records()]
 winner_counts = Counter(district_winners)
 def make_winner_map(outfn):
-	plt.figure(dpi = PLOT_DPI, frameon = False)
+	fig = plt.figure(dpi = PLOT_DPI, frameon = False)
 	ax = data_lokal.plot(None, alpha=0.5, legend=True, figsize=(12,12), color = [party_colors[i] for i in district_winners])
 	ax.set_axis_off()
 	ax.set_aspect('equal')
@@ -161,7 +159,25 @@ def make_winner_map(outfn):
 	plt.box(False)
 	plt.tight_layout()
 	plt.savefig(os.path.join(OUTDIR, outfn))
-	plt.close()
+	plt.close(fig)
+	
+def make_corr_matrix(outfn):
+	fig = plt.figure(dpi = PLOT_DPI, frameon = False)
+	df = pd.DataFrame()
+	df["Urnenwahl"] = data_lokal.wähler/data_lokal.berechtigte
+	df["Briefwahl"] = data_lokal.sperr_w/data_lokal.berechtigte
+	df["Ungültig"] = data_lokal.ungültig/data_lokal.wähler
+	for p in parties:
+		df[p] = data_lokal[p] / data_lokal.wähler
+	f = plt.figure(figsize=(19, 15))
+	plt.matshow(df.corr(), fignum=f.number)
+	plt.xticks(range(df.shape[1]), df.columns, fontsize=14, rotation=45)
+	plt.yticks(range(df.shape[1]), df.columns, fontsize=14)
+	cb = plt.colorbar()
+	cb.ax.tick_params(labelsize=14)
+	plt.title('Korrelationen', fontsize=16)
+	plt.savefig(os.path.join(OUTDIR, outfn))
+	plt.close(fig)
 
 
 make_winner_map("winners.png")
@@ -170,6 +186,7 @@ make_map(briefwahl_per_w*data_lokal.sperr_w/(briefwahl_per_w*data_lokal.sperr_w+
 make_map(np.log10(data_lokal.berechtigte / data_lokal.area), "area.png")
 make_pca_parties("parteien_pca.png")
 make_pca_places("bezirke_pca.png")
+make_corr_matrix("korrelation.png")
 for i in range(PCA_COMPONENTS_MAPS):
 	make_map(dat_comps[i], f"pca{i+1}.png")
 

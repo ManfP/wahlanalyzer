@@ -2,11 +2,16 @@
 {% set title = electionname %}
 {% extends "base.html" %}
 {% block content %}
+
+Insgesammt haben von {{berechtigte}} Wahlberechtigten {{wähler}} ({{"{:.2%}".format(beteiligung)}}) eine Stimme abgegeben.<br />
+Davon entfallen {{lokalwähler}} ({{"{:.2%}".format(lokalwahl_anteil)}}) auf Wahllokale und {{briefwähler}} ({{"{:.2%}".format(briefwahl_anteil)}}) auf Briefwahl. <br />
+
+
 {{resulttable|safe}}
 <h3>Alle weiteren Ergebnisse ohne Briefwahlergebnisse!</h3>
 
-Für die Anzahl Briefwähler pro Stimmbezirk wird Anteil der Wahlberechtigen mit Sperrverwerk W (ausgestellter Wahlschein) als Proxy für Briefwähler verwendet. <br />
-Davon haben {{"{:.2%}".format(briefwahl_success)}} tatsächlich per Brief gewählt.
+Für die Anzahl Briefwähler pro Stimmbezirk wird der Anteil der Wahlberechtigen mit Sperrverwerk W (ausgestellter Wahlschein) als Proxy für Briefwähler verwendet. <br />
+Von diesen {{sperrw}} Briefwahlberechtigten haben {{"{:.2%}".format(briefwahl_success)}} tatsächlich per Brief gewählt.
 
 <br />
 
@@ -20,8 +25,10 @@ Davon haben {{"{:.2%}".format(briefwahl_success)}} tatsächlich per Brief gewäh
 <img src="briefwahl.png" width=60%></img>
 
 <h2>Wahlberechtigte pro Fläche (logarithmisch)</h2>
+Ein Unterschied von 1 entspricht einem Faktor 10 bei der Dichte der Wahlberechtigten. <br />
 <img src="area.png" width=60%></img>
 
-<h2>Korrelationen von Parteieregbnissen (bezüglich Stimmbezirken)</h2>
+<h2>Korrelationen von Parteiergebnissen (bezüglich Stimmbezirken)</h2>
 <img src="korrelation.png" width=60%></img>
+{{corrtable|safe}}
 {% endblock %}

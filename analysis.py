@@ -16,7 +16,7 @@ from collections import Counter
 
 WAHL_NAME = "Kommunalwahl Bonn 2020 (Stadtrat)"
 OUTDIR = "out/"
-parties = ["CDU","SPD","GRÜNE","FDP","DIE LINKE","BBB","AfD","PIRATEN","BIG","Die PARTEI","Stephan Post","Volt"]
+parties = ["CDU","SPD","GRÜNE","FDP","LINKE","BBB","AfD","PIRATEN","BIG","PARTEI","S. Post","Volt"]
 columns = ["datum","wahl","ags","gebiet_nr","gebiet_name","max_schnellmeldungen","schnellmeldungen","nicht_sperr_w","sperr_w","nicht_verzeichnis","berechtigte","wähler","wähler_wahlschein","ungültig","gültig"]+parties
 party_colors = {"GRÜNE":"green","SPD":"red","CDU":"black","BBB":"blue","BIG":"yellow"} # only needed for winning parties in each district. matplotlib colors
 URL_RESULTS = "http://wahlen.bonn.de/wahlen/KW2020/05314000/html5/Open-Data-Ratswahl-NRW436.csv"
@@ -86,19 +86,18 @@ dat_comps = dat_pca.transpose()
 def get_pca_table():
 	table = []
 	for i in range(len(parties)+2):
-		s = (["(nicht)","(brief)","(ungültig)"]+parties)[i]
+		s = (["(nichtwähler)","(briefwahl)","(ungültig)"]+parties)[i]
 		l = [s]
 		l += [format(k[i], ".03f") for k in comps[:PCA_COMPONENTS_TABLE]]
 		table.append(l)
 	headers=["Partei"]+[f"Komp. {i+1}" for i in range(PCA_COMPONENTS_TABLE)]
 	return tabulate.tabulate(table, headers=headers, tablefmt="html")
 	
-
+brief_gesamt=data[data.berechtigte==0].sum()
+lokal_gesamt=data[data.berechtigte!=0].sum()
+gesamt=data.sum()
 def get_result_table():
 	table = []
-	brief_gesamt=data[data.berechtigte==0].sum()
-	lokal_gesamt=data[data.berechtigte!=0].sum()
-	gesamt=data.sum()
 	for p in parties:
 		l=[p]
 		l.append(format(lokal_gesamt[p]/lokal_gesamt.gültig,".2%"))
@@ -111,7 +110,7 @@ def make_pca_parties(outfn):
 	fig = plt.figure(dpi=PLOT_DPI)
 	X = []
 	Y = []
-	for i,p in enumerate(["(nicht)","(brief)","(ungültig)"]+parties):
+	for i,p in enumerate(["(nichtwähler)","(briefwahl)","(ungültig)"]+parties):
 		x=comps[0][i]
 		y=comps[1][i]
 		X.append(x)
@@ -161,23 +160,37 @@ def make_winner_map(outfn):
 	plt.savefig(os.path.join(OUTDIR, outfn))
 	plt.close(fig)
 	
+def get_corr_matrix():
+	
+	return df.corr()
+	
+
 def make_corr_matrix(outfn):
-	fig = plt.figure(dpi = PLOT_DPI, frameon = False)
 	df = pd.DataFrame()
-	df["Urnenwahl"] = data_lokal.wähler/data_lokal.berechtigte
+	df["Lokalwahl"] = data_lokal.wähler/data_lokal.berechtigte
 	df["Briefwahl"] = data_lokal.sperr_w/data_lokal.berechtigte
 	df["Ungültig"] = data_lokal.ungültig/data_lokal.wähler
 	for p in parties:
 		df[p] = data_lokal[p] / data_lokal.wähler
+	fig = plt.figure(dpi = PLOT_DPI, frameon = False)
+
 	f = plt.figure(figsize=(19, 15))
 	plt.matshow(df.corr(), fignum=f.number)
 	plt.xticks(range(df.shape[1]), df.columns, fontsize=14, rotation=45)
 	plt.yticks(range(df.shape[1]), df.columns, fontsize=14)
 	cb = plt.colorbar()
 	cb.ax.tick_params(labelsize=14)
-	plt.title('Korrelationen', fontsize=16)
 	plt.savefig(os.path.join(OUTDIR, outfn))
 	plt.close(fig)
+	
+def get_corr_table():
+	df = pd.DataFrame()
+	df["Lokalwahl"] = data_lokal.wähler/data_lokal.berechtigte
+	df["Briefwahl"] = data_lokal.sperr_w/data_lokal.berechtigte
+	df["Ungültig"] = data_lokal.ungültig/data_lokal.wähler
+	for p in parties:
+		df[p] = data_lokal[p] / data_lokal.wähler
+	return df.corr().to_html(float_format = lambda i:format(i," .03f"))	
 
 
 make_winner_map("winners.png")
@@ -192,7 +205,16 @@ for i in range(PCA_COMPONENTS_MAPS):
 
 r=jinja_env.get_template("index.html").render(resulttable = get_result_table(),
 										      briefwahl_success = briefwahl_per_w,
-										      electionname = WAHL_NAME)
+										      electionname = WAHL_NAME,
+										      berechtigte = gesamt.berechtigte,
+										      wähler = gesamt.wähler,
+										      beteiligung = gesamt.wähler/gesamt.berechtigte,
+										      lokalwähler = lokal_gesamt.wähler,
+										      lokalwahl_anteil = lokal_gesamt.wähler/gesamt.wähler,
+										      briefwähler = brief_gesamt.wähler,
+										      briefwahl_anteil = brief_gesamt.wähler/gesamt.wähler,
+										      sperrw = lokal_gesamt.sperr_w,
+										      corrtable = get_corr_table())
 with open(os.path.join(OUTDIR, "index.html"),"w") as f:
 	f.write(r)
 	

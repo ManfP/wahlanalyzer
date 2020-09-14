@@ -27,3 +27,15 @@ body {
   background-color: #209f20;
   color: white;
 }
+
+table {
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: left;
+  padding: 9px;
+}
+
+tr:nth-child(even) {background-color: #eee;}
+

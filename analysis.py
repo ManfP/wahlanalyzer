@@ -1,6 +1,7 @@
 import pandas as pd
 import geopandas
 from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
 import matplotlib
 import contextily as ctx
 from sklearn.preprocessing import StandardScaler
@@ -11,12 +12,13 @@ import requests
 import os
 import shutil
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from collections import Counter
 
 WAHL_NAME = "Kommunalwahl Bonn 2020"
 OUTDIR = "out/"
-parties = ["CDU","SPD","Grüne","FDP","Linke","BBB","AfD","Piraten","BIG","PARTEI","StephanPost","Volt"]
+parties = ["CDU","SPD","GRÜNE","FDP","DIE LINKE","BBB","AfD","PIRATEN","BIG","Die PARTEI","Stephan Post","Volt"]
 columns = ["datum","wahl","ags","gebiet_nr","gebiet_name","max_schnellmeldungen","schnellmeldungen","nicht_sperr_w","sperr_w","nicht_verzeichnis","berechtigte","wähler","wähler_wahlschein","ungültig","gültig"]+parties
-party_colors = {"Grüne":"green","SPD":"red","CDU":"black","BBB":"blue","BIG":"brown"} # only needed for winning parties in each district. matplotlib colors
+party_colors = {"GRÜNE":"green","SPD":"red","CDU":"black","BBB":"blue","BIG":"yellow"} # only needed for winning parties in each district. matplotlib colors
 URL_RESULTS = "http://wahlen.bonn.de/wahlen/KW2020/05314000/html5/Open-Data-Ratswahl-NRW436.csv"
 #URL_RESULTS = "Open-Data-Ratswahl-NRW436.csv" # this can be a local file too
 URL_GEODATA = "https://stadtplan.bonn.de/geojson?OD=4450"
@@ -51,9 +53,9 @@ data_lokal = data[data.berechtigte != 0] # filter out ze briefwahlbezirke
 briefwahl_per_w = data[data.berechtigte == 0].wähler.sum() / data[data.berechtigte != 0].sperr_w.sum() # Briefwähler / Wähler mit W-Vermerk
 
 
-def make_map(data, outfn):
+def make_map(d, outfn, **kwargs):
 	plt.figure(dpi = PLOT_DPI, frameon = False)
-	ax = data_lokal.plot(data, alpha=0.5, legend=True, figsize=(12,12))
+	ax = data_lokal.plot(d, alpha=0.5, legend=True, figsize=(12,12), **kwargs)
 	ax.set_axis_off()
 	ax.set_aspect('equal')
 	ctx.add_basemap(ax, source=ctx.providers.CartoDB.Positron, zoom = 13)
@@ -143,9 +145,26 @@ def make_pca_places(outfn):
 	plt.legend(leg)
 	plt.savefig(os.path.join(OUTDIR, outfn),dpi=PLOT_DPI)
 	plt.close()
-
-
 	
+district_winners = [max(parties,key=lambda i:d[i]) for d in data_lokal.to_records()]
+winner_counts = Counter(district_winners)
+def make_winner_map(outfn):
+	plt.figure(dpi = PLOT_DPI, frameon = False)
+	ax = data_lokal.plot(None, alpha=0.5, legend=True, figsize=(12,12), color = [party_colors[i] for i in district_winners])
+	ax.set_axis_off()
+	ax.set_aspect('equal')
+	ctx.add_basemap(ax, source=ctx.providers.CartoDB.Positron, zoom = 13)
+	handles = []
+	for i in sorted(winner_counts.keys(), key=winner_counts.get, reverse=True):
+		handles.append(mpatches.Patch(color=party_colors[i], label=i))
+	plt.legend(handles=handles)
+	plt.box(False)
+	plt.tight_layout()
+	plt.savefig(os.path.join(OUTDIR, outfn))
+	plt.close()
+
+
+make_winner_map("winners.png")
 make_map((briefwahl_per_w*data_lokal.sperr_w+data_lokal.wähler)/data_lokal.berechtigte, "beteiligung.png")
 make_map(briefwahl_per_w*data_lokal.sperr_w/(briefwahl_per_w*data_lokal.sperr_w+data_lokal.wähler), "briefwahl.png")
 make_map(np.log10(data_lokal.berechtigte / data_lokal.area), "area.png")

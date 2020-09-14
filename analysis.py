@@ -171,7 +171,10 @@ def make_corr_matrix(outfn):
 	fig = plt.figure(dpi = PLOT_DPI, frameon = False)
 
 	f = plt.figure(figsize=(19, 15))
-	plt.matshow(df.corr(), fignum=f.number)
+	corr = np.array(df.corr())
+	for i in range(len(corr)):
+		corr[i][i]=float("NaN")
+	plt.matshow(corr, fignum=f.number)
 	plt.xticks(range(df.shape[1]), df.columns, fontsize=14, rotation=45)
 	plt.yticks(range(df.shape[1]), df.columns, fontsize=14)
 	cb = plt.colorbar()

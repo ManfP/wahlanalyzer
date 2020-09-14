@@ -1,0 +1,29 @@
+body {
+  margin: 0;
+}
+
+.content {
+  margin: 30px;
+}
+
+.navbar {
+  overflow: hidden;
+  background-color: #111;
+}
+
+.navbar a {
+  float: left;
+  color: #e7e7e7;
+  padding: 15px;
+  text-decoration: none;
+}
+
+.navbar a:hover {
+  background-color: #eee;
+  color: black;
+}
+
+.navbar a.active {
+  background-color: #209f20;
+  color: white;
+}

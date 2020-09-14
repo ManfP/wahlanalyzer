@@ -1,7 +1,5 @@
-<head>
-  <meta charset="utf-8">
-</head>
-
+{% extends "base.html" %}
+{% block content %}
 <h1>Hauptkomponentenanalyse</h1>
 {{pcatable|safe}}
 
@@ -13,3 +11,4 @@
 <h2>{{i}}. Komponente</h2>
 <img src="pca{{i}}.png" width=60%></img>
 {% endfor %}
+{% endblock %}

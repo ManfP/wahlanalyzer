@@ -1,7 +1,5 @@
-<head>
-  <meta charset="utf-8">
-</head>
-
+{% extends "base.html" %}
+{% block content %}
 {{resulttable|safe}}
 
 <h3>Alle weiteren Ergebnisse ohne Briefwahlergebnisse!</h3>
@@ -20,3 +18,4 @@ Davon haben {{"{:.2%}".format(briefwahl_success)}} tatsächlich per Brief gewäh
 <img src="area.png" width=60%></img>
 
 <h2><a href="pca.html">Hauptkomponentenanalyse</a></h2>
+{% endblock %}

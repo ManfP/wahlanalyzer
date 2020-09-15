@@ -123,19 +123,22 @@ def make_pca_parties(outfn):
 	plt.savefig(os.path.join(OUTDIR, outfn))
 	plt.close(fig)
 	
+district_winners = [max(parties,key=lambda i:d[i]) for d in data_lokal.to_records()]
+winner_counts = Counter(district_winners)
+
 def make_pca_places(outfn):
 	fig = plt.figure(dpi=PLOT_DPI)
 	recs = data_lokal.to_records()
 	assert len(recs)==len(dat_pca)
 	leg = []
-	for p in parties:
-		l = [i for i in range(len(recs)) if max(parties,key=lambda x:recs[i][x])==p]
+	for p in sorted(winner_counts.keys(), key = winner_counts.get, reverse=True):
+		l = [i for i in range(len(recs)) if district_winners[i]==p]
 		if not l:
 		    continue
 		X=[dat_pca[i][0] for i in l]
 		Y=[dat_pca[i][1] for i in l]
 		plt.plot(X,Y,".",color=party_colors[p])
-		leg.append(p)
+		leg.append(f"{p} ({len(l)})")
 	plt.title("Stimmbezirke nach stärkster Kraft")
 	plt.xlabel("Komponente 1")
 	plt.ylabel("Komponente 2")
@@ -143,8 +146,7 @@ def make_pca_places(outfn):
 	plt.savefig(os.path.join(OUTDIR, outfn),dpi=PLOT_DPI)
 	plt.close(fig)
 	
-district_winners = [max(parties,key=lambda i:d[i]) for d in data_lokal.to_records()]
-winner_counts = Counter(district_winners)
+
 def make_winner_map(outfn):
 	fig = plt.figure(dpi = PLOT_DPI, frameon = False)
 	ax = data_lokal.plot(None, alpha=0.5, legend=True, figsize=(12,12), color = [party_colors[i] for i in district_winners])
